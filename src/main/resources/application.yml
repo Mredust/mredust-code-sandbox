@@ -1,0 +1,23 @@
+#@author <a href="https://github.com/Mredust">Mredust</a>
+spring:
+  application:
+    name: mredust-code-sandbox
+  profiles:
+    active: dev
+  session:
+    timeout: 2592000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+server:
+  port: 4090
+  servlet:
+    context-path: /api
+    session:
+      cookie:
+        max-age: 2592000
+
+docker:
+  host: 192.168.91.131
+  port: 2375
