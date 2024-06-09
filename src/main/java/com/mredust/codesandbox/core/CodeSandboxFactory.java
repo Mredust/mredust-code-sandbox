@@ -1,7 +1,9 @@
-package com.mredust.codesandbox.core.codesandbox;
+package com.mredust.codesandbox.core;
 
-import com.mredust.codesandbox.model.enums.LanguageEnum;
 import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
+import com.mredust.codesandbox.core.template.JavaCodeSandbox;
+import com.mredust.codesandbox.core.template.PythonCodeSandbox;
+import com.mredust.codesandbox.model.enums.LanguageEnum;
 
 import java.util.EnumMap;
 
