@@ -8,6 +8,8 @@ import com.mredust.codesandbox.exception.BusinessException;
 import com.mredust.codesandbox.model.dto.ExecuteCodeResponse;
 import com.mredust.codesandbox.model.dto.ExecuteResult;
 import com.mredust.codesandbox.model.enums.ExecuteCodeStatusEnum;
+import com.mredust.codesandbox.utils.ProcessUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,12 +26,14 @@ public abstract class CodeSandboxTemplate {
     
     private static final WordTree WORD_TREE;
     
+    private static final String EXIT_CMD = "exit";
+    
     static {
         WORD_TREE = new WordTree();
         WORD_TREE.addWords("Files", "exec");
     }
     
-    protected ExecuteCodeResponse executeCode(List<String> inputList, String code) {
+    public ExecuteCodeResponse executeCode(List<String> inputList, String code) {
         FoundWord foundWord = WORD_TREE.matchWord(code);
         if (foundWord != null) {
             throw new BusinessException(ResponseCode.DANGER_CODE);
@@ -47,7 +51,7 @@ public abstract class CodeSandboxTemplate {
         }
         List<ExecuteResult> executeResultList;
         try {
-            executeResultList = runCompileFile(file, inputList);
+            executeResultList = runCompileFile(EXIT_CMD, file, file.getAbsolutePath(), inputList);
         } catch (IOException e) {
             return getErrorResponse(ExecuteCodeStatusEnum.RUN_FAILED);
         }
@@ -60,8 +64,23 @@ public abstract class CodeSandboxTemplate {
     
     protected abstract ExecuteResult compileCode(File file) throws IOException;
     
+    protected List<ExecuteResult> runCompileFile(String cmd, File file, String path, List<String> inputList) throws IOException {
+        ArrayList<ExecuteResult> executeResultList = new ArrayList<>();
+        if (inputList.isEmpty()) {
+            executeResultList.add(runProcess(cmd, path, StringUtils.EMPTY));
+        } else {
+            for (String inputArgs : inputList) {
+                executeResultList.add(runProcess(cmd, path, inputArgs));
+            }
+        }
+        return executeResultList;
+    }
     
-    protected abstract List<ExecuteResult> runCompileFile(File file, List<String> inputList) throws IOException;
+    private ExecuteResult runProcess(String cmd, String path, String inputArgs) throws IOException {
+        String runCmd = String.format(cmd, path, inputArgs);
+        Process runProcess = Runtime.getRuntime().exec(runCmd);
+        return ProcessUtils.processHandler(runProcess);
+    }
     
     protected ExecuteCodeResponse getExecuteCodeResponse(List<ExecuteResult> executeResultList) {
         ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();

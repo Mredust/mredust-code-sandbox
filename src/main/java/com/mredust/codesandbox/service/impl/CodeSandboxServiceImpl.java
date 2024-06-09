@@ -7,9 +7,9 @@ import com.mredust.codesandbox.model.dto.ExecuteCodeResponse;
 import com.mredust.codesandbox.model.enums.LanguageEnum;
 import com.mredust.codesandbox.service.CodeSandboxService;
 import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
-import com.mredust.codesandbox.core.codesandbox.CodeSandboxFactory;
-import com.mredust.codesandbox.core.codesandbox.JavaCodeSandbox;
-import com.mredust.codesandbox.core.codesandbox.PythonCodeSandbox;
+import com.mredust.codesandbox.core.CodeSandboxFactory;
+import com.mredust.codesandbox.core.template.JavaCodeSandbox;
+import com.mredust.codesandbox.core.template.PythonCodeSandbox;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 

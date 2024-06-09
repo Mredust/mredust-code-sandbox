@@ -1,17 +1,14 @@
-package com.mredust.codesandbox.core.codesandbox;
+package com.mredust.codesandbox.core.template;
 
 import cn.hutool.core.io.FileUtil;
 import com.mredust.codesandbox.constant.PythonConstant;
 import com.mredust.codesandbox.model.dto.ExecuteCodeResponse;
 import com.mredust.codesandbox.model.dto.ExecuteResult;
 import com.mredust.codesandbox.model.enums.ExecuteCodeStatusEnum;
-import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
-import com.mredust.codesandbox.utils.ProcessUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -42,21 +39,7 @@ public class PythonCodeSandbox extends CodeSandboxTemplate {
     }
     
     @Override
-    protected List<ExecuteResult> runCompileFile(File file, List<String> inputList) throws IOException {
-        // todo 传递参数有问题
-        ArrayList<ExecuteResult> executeResultList = new ArrayList<>();
-        for (String inputArgs : inputList) {
-            String runCmd = String.format(PythonConstant.PYTHON_RUN_CMD_WITH_ARGS, file.getAbsolutePath(), inputArgs);
-            Process runProcess = Runtime.getRuntime().exec(runCmd);
-            ExecuteResult executeResult = ProcessUtils.processHandler(runProcess);
-            executeResultList.add(executeResult);
-        }
-        
-        String runCmd = String.format(PythonConstant.PYTHON_RUN_CMD, file.getAbsolutePath());
-        Process runProcess = Runtime.getRuntime().exec(runCmd);
-        ExecuteResult executeResult = ProcessUtils.processHandler(runProcess);
-        executeResultList.add(executeResult);
-        return executeResultList;
+    protected List<ExecuteResult> runCompileFile(String cmd, File file, String path, List<String> inputList) throws IOException {
+        return super.runCompileFile(PythonConstant.PYTHON_RUN_CMD, file, file.getAbsolutePath(), inputList);
     }
-    
 }

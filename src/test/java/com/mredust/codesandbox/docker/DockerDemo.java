@@ -1,4 +1,4 @@
-package com.mredust.codesandbox.demo;
+package com.mredust.codesandbox.docker;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.PullImageCmd;
