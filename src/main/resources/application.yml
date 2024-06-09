@@ -18,3 +18,6 @@ server:
       cookie:
         max-age: 2592000
 
+docker:
+  host: 192.168.91.131
+  port: 2375

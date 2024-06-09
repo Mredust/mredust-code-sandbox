@@ -29,7 +29,7 @@ public abstract class CodeSandboxTemplate {
         WORD_TREE.addWords("Files", "exec");
     }
     
-    public ExecuteCodeResponse executeCode(List<String> inputList, String code) {
+    protected ExecuteCodeResponse executeCode(List<String> inputList, String code) {
         FoundWord foundWord = WORD_TREE.matchWord(code);
         if (foundWord != null) {
             throw new BusinessException(ResponseCode.DANGER_CODE);
