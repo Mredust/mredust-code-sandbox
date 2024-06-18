@@ -155,7 +155,7 @@ public abstract class DockerCodeSandbox {
         for (ExecuteResult executeResult : executeResultList) {
             String message = executeResult.getMessage();
             if (ExecuteCodeStatusEnum.COMPILE_FAILED.getCode().equals(executeResult.getExecuteCode())) {
-                executeCodeResponse.setStatus(ExecuteCodeStatusEnum.COMPILE_FAILED.getCode());
+                executeCodeResponse.setStatusCode(ExecuteCodeStatusEnum.COMPILE_FAILED.getCode());
                 executeCodeResponse.setMessage(ExecuteCodeStatusEnum.COMPILE_FAILED.getMsg());
                 executeCodeResponse.setErrorMessage(message);
                 outputList.clear();
@@ -169,7 +169,7 @@ public abstract class DockerCodeSandbox {
             totalMemory += (runMemory != null) ? runMemory : 0L;
         }
         if (!compileFailed) {
-            executeCodeResponse.setStatus(ExecuteCodeStatusEnum.SUCCESS.getCode());
+            executeCodeResponse.setStatusCode(ExecuteCodeStatusEnum.SUCCESS.getCode());
             executeCodeResponse.setMessage(ExecuteCodeStatusEnum.SUCCESS.getMsg());
         }
         executeCodeResponse.setTime(totalTime);
@@ -189,7 +189,7 @@ public abstract class DockerCodeSandbox {
     private ExecuteCodeResponse getErrorResponse(Throwable e) {
         ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
         executeCodeResponse.setMessage(e.getMessage());
-        executeCodeResponse.setStatus(2);
+        executeCodeResponse.setStatusCode(2);
         return executeCodeResponse;
     }
     

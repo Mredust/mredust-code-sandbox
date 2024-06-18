@@ -20,7 +20,7 @@ public class ExecuteCodeResponse {
     /**
      * 执行状态
      */
-    private Integer status;
+    private Integer statusCode;
     
     /**
      * 接口信息

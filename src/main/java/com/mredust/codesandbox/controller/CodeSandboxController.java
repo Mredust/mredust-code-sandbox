@@ -27,6 +27,7 @@ public class CodeSandboxController {
     
     @PostMapping("/execute")
     public BaseResponse<ExecuteCodeResponse> executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest, HttpServletRequest request) {
+        // todo ：请求身份校验
         ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
         return Result.success(executeCodeResponse);
     }
