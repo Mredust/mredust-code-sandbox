@@ -71,7 +71,7 @@ public abstract class CodeSandboxTemplate {
         Long[] memory = {0L};
         List<String> runMessageList = runCode(file, testCaseList, time, memory);
         String errorMessage = getErrorMessage(runMessageList);
-        if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(errorMessage::contains)) {
+        if (!errorMessage.isEmpty()) {
             clearFile(file);
             return getExecuteResponse(ExecuteResponseEnum.RUNTIME_ERROR, true, errorMessage, 0L, 0L);
         }
@@ -128,11 +128,11 @@ public abstract class CodeSandboxTemplate {
         for (String msg : runMessageList) {
             if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(msg::contains)) {
                 StringBuilder sb = new StringBuilder();
-                String[] errRegex = {"java\\.lang\\.\\w+\\d+\\)", "错误: .*?(?=(\\\\|$|\\n))"};
+                String[] errRegex = {"java.lang.(.*)", "错误:.*?(?=(\\\\|$|\\n))"};
                 for (String regex : errRegex) {
                     Pattern pattern = Pattern.compile(regex);
                     Matcher matcher = pattern.matcher(msg);
-                    while (matcher.find()) {
+                    if (matcher.find()) {
                         String matched = matcher.group();
                         sb.append(matched).append("\n");
                     }
