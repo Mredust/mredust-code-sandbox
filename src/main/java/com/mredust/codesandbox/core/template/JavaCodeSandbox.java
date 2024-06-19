@@ -1,27 +1,113 @@
 package com.mredust.codesandbox.core.template;
 
+import cn.hutool.core.io.FileUtil;
 import com.mredust.codesandbox.model.dto.ExecuteResponse;
 import com.mredust.codesandbox.utils.ProcessUtils;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static com.mredust.codesandbox.constant.JavaConstant.JAVA_MAIN_CLASS_NAME;
-import static com.mredust.codesandbox.constant.JavaConstant.JAVA_RUN_CMD;
+import static com.mredust.codesandbox.constant.CodeSandboxConstant.INIT_VALUE;
+import static com.mredust.codesandbox.constant.CodeSandboxConstant.PROBLEM_CLASS_NAME;
+import static com.mredust.codesandbox.constant.JavaConstant.*;
 
 /**
  * Java代码沙箱
+ *
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
 @Component
 public class JavaCodeSandbox extends CodeSandboxTemplate {
+    private static final String[] ERROR_MESSAGE_LIST = {"Exception", "Error", "错误", "异常"};
     
     @Override
     public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
         return super.executeCode(code, testCaseList);
     }
+    
+    
+    @Override
+    protected File preprocessCode(String parentPath, String code) {
+        String importPackage = "import java.util.*;\nimport java.lang.*;\nimport java.util.function.*;\n";
+        String tempCode = importPackage + code;
+        return saveFile(tempCode, parentPath, PROBLEM_CLASS_NAME);
+    }
+    
+    @Override
+    protected String compileCode(File file) {
+        String compileCmd = String.format(JAVA_COMPILE_CMD, file.getAbsolutePath());
+        return ProcessUtils.processHandler(compileCmd, INIT_VALUE, INIT_VALUE);
+    }
+    
+    @Override
+    protected Method preprocessFile(File file) {
+        Method method;
+        try (URLClassLoader classLoader = new URLClassLoader(new URL[]{file.getParentFile().toURI().toURL()})) {
+            Class<?> clazz = classLoader.loadClass(PROBLEM_CLASS_NAME);
+            method = clazz.getDeclaredMethods()[0];
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        clearFile(file);
+        return method;
+    }
+    
+    
+    @Override
+    protected String generateTemplateCode(Method method) {
+        String methodName = method.getName();
+        Parameter[] parameters = method.getParameters();
+        String returnType = method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName();
+        StringBuilder templateCode = new StringBuilder();
+        templateCode.append("import java.util.*;\n").append("import java.lang.*;\n").append("import java.util.function.*;\n").append("public class Main {\n").append("\tpublic static void main(String[] args) {\n");
+        if (returnType.contains("[]")) {
+            templateCode.append("\t\tSystem.out.println(Arrays.toString(new Solution().").append(methodName).append("(");
+        } else {
+            templateCode.append("\t\tSystem.out.print(new Solution().").append(methodName).append("(");
+        }
+        for (int i = 0; i < parameters.length; i++) {
+            Parameter parameter = parameters[i];
+            String type = parameter.getType().getSimpleName();
+            if (type.equals("java.lang.String")) {
+                type = "string";
+            }
+            templateCode.append("typeConversion(\"").append(type).append("\", args[").append(i).append("]").append(")");
+            if (i < parameters.length - 1) {
+                templateCode.append(", ");
+            }
+        }
+        if (returnType.contains("[]")) {
+            templateCode.append(")));\n").append("\t}\n");
+        } else {
+            templateCode.append("));\n").append("\t}\n");
+        }
+        templateCode.append("\t@SuppressWarnings(\"unchecked\")\n").append("\tprivate static <T> T typeConversion(String type, String arg) {\n").append("\t\tMap<String, Function<String, ?>> clazzMap = new HashMap<>(8);\n").append("\t\tclazzMap.put(\"int\", Integer::parseInt);\n").append("\t\tclazzMap.put(\"boolean\", Boolean::parseBoolean);\n").append("\t\tclazzMap.put(\"string\", s -> s);\n").append("\t\tclazzMap.put(\"int[]\", i -> Arrays.stream(i.split(\",\")).mapToInt(Integer::parseInt).toArray());\n").append("\t\tif (clazzMap.containsKey(type.trim().toLowerCase())) {\n").append("\t\t\treturn (T) clazzMap.get(type.toLowerCase()).apply(arg);\n").append("\t\t}\n").append("\t\tthrow new IllegalArgumentException(\"Unsupported type: \" + type);\n").append("\t}\n}\n");
+        return templateCode.toString();
+    }
+    
+    @Override
+    protected String mergeCode(String templateCode, String code) {
+        return templateCode + code;
+    }
+    
+    
+    @Override
+    protected File saveFile(String code, String parentPath, String fileName) {
+        String filePath = String.format("%s%s%s%s%s", parentPath, File.separator, UUID.randomUUID(), File.separator, (fileName + JAVA_SUFFIX));
+        return FileUtil.writeUtf8String(code, filePath);
+    }
+    
     
     @Override
     protected List<String> runCode(File file, List<String[]> testCaseList, Long[] time, Long[] memory) {
@@ -44,5 +130,25 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
             list.add(msg);
         }
         return list;
+    }
+    
+    @Override
+    protected String getErrorMessage(List<String> runMessageList) {
+        for (String msg : runMessageList) {
+            if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(msg::contains)) {
+                StringBuilder sb = new StringBuilder();
+                String[] errRegex = {"java.lang.(.*)", "错误:.*?(?=(\\\\|$|\\n))"};
+                for (String regex : errRegex) {
+                    Pattern pattern = Pattern.compile(regex);
+                    Matcher matcher = pattern.matcher(msg);
+                    if (matcher.find()) {
+                        String matched = matcher.group();
+                        sb.append(matched).append("\n");
+                    }
+                }
+                return sb.toString();
+            }
+        }
+        return "";
     }
 }
