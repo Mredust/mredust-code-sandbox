@@ -22,12 +22,11 @@ public class CodeSandboxServiceImpl implements CodeSandboxService {
     
     @Override
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-        // TODO:优化传参
         List<String[]> testCaseList = executeCodeRequest.getTestCaseList();
         String code = executeCodeRequest.getCode();
         String language = executeCodeRequest.getLanguage();
         if (StringUtils.isBlank(language)) {
-            throw new BusinessException(ResponseCode.PARAMS_NULL, "语言不能为空");
+            throw new BusinessException(ResponseCode.PARAMS_NULL, "编程语言不能为空");
         }
         CodeSandboxTemplate codeSandboxTemplate = CodeSandboxFactory.getCodeSandboxTemplate(LanguageEnum.getLanguageEnum(language));
         ExecuteResponse executeResponse = codeSandboxTemplate.executeCode(code, testCaseList);

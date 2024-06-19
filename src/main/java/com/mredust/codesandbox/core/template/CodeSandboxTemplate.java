@@ -12,8 +12,11 @@ import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
@@ -25,13 +28,19 @@ public abstract class CodeSandboxTemplate {
     private static final String PROBLEM_CLASS_NAME = "Solution";
     private static final String JAVA_SUFFIX = ".java";
     private static final String COMPILE_CMD = "javac -encoding UTF-8 %s";
+    private static final String[] ERROR_MESSAGE_LIST = {"Exception", "Error", "错误", "异常"};
     
     public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
-        File tempFile = saveFile(code, PROBLEM_CLASS_NAME);
+        String importPackage = "import java.util.*;\nimport java.lang.*;\nimport java.util.function.*;\n";
+        String tempCode = importPackage + code;
+        File tempFile = saveFile(tempCode, PROBLEM_CLASS_NAME);
         String compileCmd = String.format(COMPILE_CMD, tempFile.getAbsolutePath());
         String compileMessage = ProcessUtils.processHandler(compileCmd);
+        
+        
         if (!compileMessage.isEmpty()) {
-            clearFile(tempFile);
+            compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
+            // clearFile(tempFile);
             return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage);
         }
         Method method;
@@ -42,11 +51,7 @@ public abstract class CodeSandboxTemplate {
             throw new RuntimeException(e);
         }
         clearFile(tempFile);
-        String templateCode = generateTemplateCode(
-                method.getName(),
-                method.getParameters(),
-                method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName()
-        );
+        String templateCode = generateTemplateCode(method.getName(), method.getParameters(), method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName());
         File file = saveFile(templateCode + code, MAIN_CLASS_NAME);
         compileCmd = String.format(COMPILE_CMD, file.getAbsolutePath());
         compileMessage = ProcessUtils.processHandler(compileCmd);
@@ -55,11 +60,9 @@ public abstract class CodeSandboxTemplate {
             return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage);
         }
         List<String> runMessageList = runCode(file, testCaseList);
-        String[] errorMessageList = {"Exception", "Error", "错误", "异常"};
-        // TODO:异常信息细化处理
-        String errorMessage = getErrorMessage(runMessageList, errorMessageList);
-        if (Arrays.stream(errorMessageList).anyMatch(errorMessage::contains)) {
-            clearFile(file);
+        String errorMessage = getErrorMessage(runMessageList);
+        if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(errorMessage::contains)) {
+            // clearFile(file);
             return getExecuteResponse(ExecuteResponseEnum.RUNTIME_ERROR, true, errorMessage);
         }
         clearFile(file);
@@ -74,12 +77,7 @@ public abstract class CodeSandboxTemplate {
     
     private static String generateTemplateCode(String methodName, Parameter[] parameters, String returnType) {
         StringBuilder templateCode = new StringBuilder();
-        templateCode
-                .append("import java.util.*;\n")
-                .append("import java.lang.*;\n")
-                .append("import java.util.function.*;\n")
-                .append("public class Main {\n")
-                .append("\tpublic static void main(String[] args) {\n");
+        templateCode.append("import java.util.*;\n").append("import java.lang.*;\n").append("import java.util.function.*;\n").append("public class Main {\n").append("\tpublic static void main(String[] args) {\n");
         if (returnType.contains("[]")) {
             templateCode.append("\t\tSystem.out.println(Arrays.toString(new Solution().").append(methodName).append("(");
         } else {
@@ -102,18 +100,7 @@ public abstract class CodeSandboxTemplate {
             templateCode.append("));\n").append("\t}\n");
         }
         // todo：是否单独读取
-        templateCode.append("\t@SuppressWarnings(\"unchecked\")\n")
-                .append("\tprivate static <T> T typeConversion(String type, String arg) {\n")
-                .append("\t\tMap<String, Function<String, ?>> clazzMap = new HashMap<>(8);\n")
-                .append("\t\tclazzMap.put(\"int\", Integer::parseInt);\n")
-                .append("\t\tclazzMap.put(\"boolean\", Boolean::parseBoolean);\n")
-                .append("\t\tclazzMap.put(\"string\", s -> s);\n")
-                .append("\t\tclazzMap.put(\"int[]\", i -> Arrays.stream(i.split(\",\")).mapToInt(Integer::parseInt).toArray());\n")
-                .append("\t\tif (clazzMap.containsKey(type.trim().toLowerCase())) {\n")
-                .append("\t\t\treturn (T) clazzMap.get(type.toLowerCase()).apply(arg);\n")
-                .append("\t\t}\n")
-                .append("\t\tthrow new IllegalArgumentException(\"Unsupported type: \" + type);\n")
-                .append("\t}\n}\n");
+        templateCode.append("\t@SuppressWarnings(\"unchecked\")\n").append("\tprivate static <T> T typeConversion(String type, String arg) {\n").append("\t\tMap<String, Function<String, ?>> clazzMap = new HashMap<>(8);\n").append("\t\tclazzMap.put(\"int\", Integer::parseInt);\n").append("\t\tclazzMap.put(\"boolean\", Boolean::parseBoolean);\n").append("\t\tclazzMap.put(\"string\", s -> s);\n").append("\t\tclazzMap.put(\"int[]\", i -> Arrays.stream(i.split(\",\")).mapToInt(Integer::parseInt).toArray());\n").append("\t\tif (clazzMap.containsKey(type.trim().toLowerCase())) {\n").append("\t\t\treturn (T) clazzMap.get(type.toLowerCase()).apply(arg);\n").append("\t\t}\n").append("\t\tthrow new IllegalArgumentException(\"Unsupported type: \" + type);\n").append("\t}\n}\n");
         return templateCode.toString();
     }
     
@@ -127,10 +114,20 @@ public abstract class CodeSandboxTemplate {
         }
     }
     
-    private String getErrorMessage(List<String> runMessageList, String[] errorMessageList) {
+    private String getErrorMessage(List<String> runMessageList) {
         for (String msg : runMessageList) {
-            if (Arrays.stream(errorMessageList).anyMatch(msg::contains)) {
-                return msg;
+            if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(msg::contains)) {
+                StringBuilder sb = new StringBuilder();
+                String[] errRegex = {"java\\.lang\\.\\w+\\d+\\)", "错误: .*?(?=(\\\\|$|\\n))"};
+                for (String regex : errRegex) {
+                    Pattern pattern = Pattern.compile(regex);
+                    Matcher matcher = pattern.matcher(msg);
+                    while (matcher.find()) {
+                        String matched = matcher.group();
+                        sb.append(matched).append("\n");
+                    }
+                }
+                return sb.toString();
             }
         }
         return "";

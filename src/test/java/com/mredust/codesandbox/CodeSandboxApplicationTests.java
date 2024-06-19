@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,7 +39,6 @@ class CodeSandboxApplicationTests {
         executeCodeRequest.setLanguage("java");
         
         for (List<String> testCase : testCases) {
-            executeCodeRequest.setInputList(testCase);
             ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
             System.out.println(executeCodeResponse);
         }
@@ -64,7 +62,6 @@ class CodeSandboxApplicationTests {
         executeCodeRequest.setLanguage("python");
         
         for (List<String> testCase : testCases) {
-            executeCodeRequest.setInputList(testCase);
             ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
             System.out.println(executeCodeResponse);
         }
@@ -73,7 +70,6 @@ class CodeSandboxApplicationTests {
     @Test
     void pythonSandboxTest2() {
         ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
-        executeCodeRequest.setInputList(new ArrayList<>(0));
         executeCodeRequest.setCode("print('Hello, World!')");
         executeCodeRequest.setLanguage("python");
         ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);

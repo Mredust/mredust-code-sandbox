@@ -19,10 +19,8 @@ import java.util.List;
 public class ExecuteCodeRequest {
     
     /**
-     * 输入列表
+     * 测试用例
      */
-    private List<String> inputList;
-    
     private List<String[]> testCaseList;
     
     /**

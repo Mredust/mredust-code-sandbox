@@ -1,34 +1,31 @@
 package com.mredust.codesandbox.my;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
 public class Main {
-    private static final String RUN_CMD = "java -Dfile.encoding=UTF-8 -cp ";
-    // private static final String RUN_CMD = "java -Dfile.encoding=UTF-8 -cp %s %s";
-    private static final String CLASS_NAME = "Main";
-    public static void main(String[] args) {
-        List<String> params = new ArrayList<>();
-        // java -Dfile.encoding=UTF-8 -cp file.getParent() class_name var1 var2 ...
-        //   String rumCmd = String.format(createRunCmd(size), file.getParent(), CLASS_NAME, var1);
-        params.add("filePath");
-        params.add(CLASS_NAME);
-        for (int i = 0; i < 2; i++) {
-            params.add("4");
-        }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < params.size(); i++) {
-            if (i > 0) {
-                sb.append(" ");
-            }
-            sb.append(params.get(i));
-        }
-        String joinedParams = sb.toString();
 
-        System.out.println(RUN_CMD + joinedParams);
+}
+
+class Solution {
+    public static void main(String[] args) {
+        // String input = "Exception in thread \\\"main\\\"java.lang.ArithmeticException: / by zero\\t at Solution.sum(Main.java:21)\\t at Main.main(Main.java:6)";
+        String input = "F:\\\\mredust-code-sandbox\\\\tempcode\\\\9be52b94-54ed-40a2-8452-5b27b1d74c73\\\\Solution.java:4: 错误: 需要';'class Solution { public int sum(int a, int b)  {rturn a + b;}}                                                       ^F:\\\\mredust-code-sandbox\\\\tempcode\\\\9be52b94-54ed-40a2-8452-5b27b1d74c73\\\\Solution.java:4: 错误: 不是语句class Solution { public int sum(int a, int b)  {rturn a + b;}}                                                          ^2 个错误";
+
+        String[] regex_list = {"java.lang.*?\\d+\\)", "\\w+\\.java:\\d+: 错误: .*?(?=(\\\\|$))"};
+        for (String regex : regex_list) {
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(input);
+            while (matcher.find()) {
+                // 输出匹配到的部分
+                String matched = matcher.group();
+                System.out.println("Matched: " + matched);
+            }
+        }
     }
 }
+
+

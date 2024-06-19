@@ -45,7 +45,7 @@ public abstract class DockerCodeSandbox {
     
     
     public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
-        List<String> inputList = executeCodeRequest.getInputList();
+        List<String> inputList = new ArrayList<>();
         String code = executeCodeRequest.getCode();
         String path = String.format("%s%s%s", System.getProperty("user.dir"), File.separator, GLOBAL_CODE_DIR_PATH);
         File file = saveCodeToFile(path, code);
