@@ -15,7 +15,7 @@ import java.util.UUID;
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
-@Component
+@Deprecated
 public class PythonCodeSandbox extends CodeSandboxTemplate {
     
     @Override

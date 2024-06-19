@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 
 
 /**
@@ -38,7 +37,7 @@ public class ProcessUtils {
     
     public static String getStreamMessage(InputStream inputStream) throws IOException {
         StringBuilder outputList = new StringBuilder();
-        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, "GBK"))) {
             String outputLine;
             while ((outputLine = bufferedReader.readLine()) != null) {
                 outputList.append(outputLine);
@@ -57,7 +56,7 @@ public class ProcessUtils {
         }
     }
     
-    //TODO：移除多余
+    // TODO：移除多余
     public static ExecuteResult processHandler(Process compileProcess) {
         ExecuteResult executeResult = new ExecuteResult();
         try {

@@ -14,6 +14,7 @@ import java.util.UUID;
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
+@Deprecated
 public class JavaCodeSandbox extends CodeSandboxTemplate {
     @Override
     public ExecuteCodeResponse executeCode(List<String> inputList, String code) {

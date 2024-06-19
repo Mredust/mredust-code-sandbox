@@ -30,7 +30,7 @@ public class CodeSandboxServiceImpl implements CodeSandboxService {
             throw new BusinessException(ResponseCode.PARAMS_NULL, "语言不能为空");
         }
         CodeSandboxTemplate codeSandboxTemplate = CodeSandboxFactory.getCodeSandboxTemplate(LanguageEnum.getLanguageEnum(language));
-        ExecuteResponse executeResponse = codeSandboxTemplate.executeCode(code, testCaseList.get(0), testCaseList.get(1));
+        ExecuteResponse executeResponse = codeSandboxTemplate.executeCode(code, testCaseList);
         Integer executeResponseCode = executeResponse.getCode();
         String msg = executeResponse.getMsg();
         List<String> stdout = executeResponse.getStdout();

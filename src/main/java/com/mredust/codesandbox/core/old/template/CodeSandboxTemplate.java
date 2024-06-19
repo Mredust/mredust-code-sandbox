@@ -21,6 +21,7 @@ import java.util.List;
  *
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
+@Deprecated
 public abstract class CodeSandboxTemplate {
     private static final String GLOBAL_CODE_DIR_PATH = "tempcode";
     

@@ -13,39 +13,34 @@ import java.util.List;
  */
 @Component
 public class JavaCodeSandbox extends CodeSandboxTemplate {
-    // TODO：参数优化
-    private static final String RUN_CMD_ARG = "java -Dfile.encoding=UTF-8 -cp %s %s %s";
-    private static final String RUN_CMD_ARGS = "java -Dfile.encoding=UTF-8 -cp %s %s %s %s";
+    private static final String RUN_CMD = "java -Dfile.encoding=UTF-8 -cp";
     private static final String CLASS_NAME = "Main";
     
     @Override
-    public ExecuteResponse executeCode(String code, String[]... testCaseList) {
+    public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
         return super.executeCode(code, testCaseList);
     }
     
     @Override
-    protected List<String> runCode(File file, String[]... testCaseList) {
-        ArrayList<String> list = new ArrayList<>();
-        int size = testCaseList.length;
-        String runArg = RUN_CMD_ARG;
-        String[] var1List = testCaseList[0];
-        String[] var2List = {};
-        if (size == 2) {
-            runArg = RUN_CMD_ARGS;
-            var2List = testCaseList[1];
+    protected List<String> runCode(File file, List<String[]> testCaseList) {
+        List<String> list = new ArrayList<>();
+        int size = testCaseList.size();
+        int totalCombinations = 1;
+        for (String[] testCase : testCaseList) {
+            totalCombinations = Math.max(testCase.length, totalCombinations);
         }
-        for (int i = 0; i < var1List.length; i++) {
-            String rumCmd = "";
-            if (size == 1) {
-                rumCmd = String.format(runArg, file.getParent(), CLASS_NAME, var1List[i]);
-            } else {
-                rumCmd = String.format(runArg, file.getParent(), CLASS_NAME, var1List[i], var2List[i]);
+        for (int i = 0; i < totalCombinations; i++) {
+            List<String> params = new ArrayList<>();
+            params.add(file.getParent());
+            params.add(CLASS_NAME);
+            for (int j = 0; j < size; j++) {
+                params.add(testCaseList.get(j)[i]);
             }
-            String msg = ProcessUtils.processHandler(rumCmd);
+            String paramList = String.join(" ", params);
+            String cmd = RUN_CMD + " " + paramList;
+            String msg = ProcessUtils.processHandler(cmd);
             list.add(msg);
         }
         return list;
     }
-    
-    
 }

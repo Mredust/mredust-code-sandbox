@@ -24,9 +24,9 @@ public abstract class CodeSandboxTemplate {
     private static final String MAIN_CLASS_NAME = "Main";
     private static final String PROBLEM_CLASS_NAME = "Solution";
     private static final String JAVA_SUFFIX = ".java";
-    private static final String COMPILE_CMD = "javac -encoding utf-8 %s";
+    private static final String COMPILE_CMD = "javac -encoding UTF-8 %s";
     
-    public ExecuteResponse executeCode(String code, String[]... testCaseList) {
+    public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
         File tempFile = saveFile(code, PROBLEM_CLASS_NAME);
         String compileCmd = String.format(COMPILE_CMD, tempFile.getAbsolutePath());
         String compileMessage = ProcessUtils.processHandler(compileCmd);
@@ -67,7 +67,7 @@ public abstract class CodeSandboxTemplate {
     }
     
     private static File saveFile(String code, String fileName) {
-        String parentPath = String.format("%s%s%s%s%s", System.getProperty("user.dir"), File.separator, "codesandbox-demo", File.separator, WORK_DIR);
+        String parentPath = String.format("%s%s%s", System.getProperty("user.dir"), File.separator, WORK_DIR);
         String filePath = String.format("%s%s%s%s%s", parentPath, File.separator, UUID.randomUUID(), File.separator, (fileName + JAVA_SUFFIX));
         return FileUtil.writeUtf8String(code, filePath);
     }
@@ -117,7 +117,7 @@ public abstract class CodeSandboxTemplate {
         return templateCode.toString();
     }
     
-    protected abstract List<String> runCode(File file, String[]... testCaseList);
+    protected abstract List<String> runCode(File file, List<String[]> testCaseList);
     
     
     private void clearFile(File file) {
