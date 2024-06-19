@@ -1,7 +1,7 @@
 package com.mredust.codesandbox.service.impl;
 
 import com.mredust.codesandbox.common.ResponseCode;
-import com.mredust.codesandbox.core.CodeSandboxFactory;
+import com.mredust.codesandbox.core.SimpleCodeSandboxFactory;
 import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
 import com.mredust.codesandbox.exception.BusinessException;
 import com.mredust.codesandbox.model.dto.ExecuteRequest;
@@ -27,7 +27,7 @@ public class CodeSandboxServiceImpl implements CodeSandboxService {
         if (StringUtils.isBlank(language)) {
             throw new BusinessException(ResponseCode.PARAMS_NULL, "编程语言不能为空");
         }
-        CodeSandboxTemplate codeSandboxTemplate = CodeSandboxFactory.getCodeSandboxTemplate(LanguageEnum.getLanguageEnum(language));
+        CodeSandboxTemplate codeSandboxTemplate = new SimpleCodeSandboxFactory().getCodeSandboxTemplate(LanguageEnum.valueOf(language.toUpperCase()));
         return codeSandboxTemplate.executeCode(code, testCaseList);
     }
 }

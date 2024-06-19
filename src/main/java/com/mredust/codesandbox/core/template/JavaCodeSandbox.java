@@ -12,6 +12,7 @@ import static com.mredust.codesandbox.constant.JavaConstant.JAVA_MAIN_CLASS_NAME
 import static com.mredust.codesandbox.constant.JavaConstant.JAVA_RUN_CMD;
 
 /**
+ * Java代码沙箱
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
 @Component

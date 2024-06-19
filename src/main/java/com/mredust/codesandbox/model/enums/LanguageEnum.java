@@ -18,8 +18,4 @@ public enum LanguageEnum {
     private final String language;
     
     private final String value;
-    
-    public static LanguageEnum getLanguageEnum(String language) {
-        return Stream.of(LanguageEnum.values()).filter(languageEnum -> languageEnum.getLanguage().equals(language)).findFirst().orElse(null);
-    }
 }
