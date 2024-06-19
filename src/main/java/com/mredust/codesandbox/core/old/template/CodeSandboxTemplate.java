@@ -1,3 +1,4 @@
+/*
 package com.mredust.codesandbox.core.old.template;
 
 import cn.hutool.core.io.FileUtil;
@@ -16,11 +17,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+*/
 /**
  * 代码沙箱模板方法
  *
  * @author <a href="https://github.com/Mredust">Mredust</a>
- */
+ *//*
+
+
+
 @Deprecated
 public abstract class CodeSandboxTemplate {
     private static final String GLOBAL_CODE_DIR_PATH = "tempcode";
@@ -135,3 +140,4 @@ public abstract class CodeSandboxTemplate {
     
     
 }
+*/

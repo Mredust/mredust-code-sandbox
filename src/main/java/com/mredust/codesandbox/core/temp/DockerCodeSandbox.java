@@ -173,7 +173,6 @@ public abstract class DockerCodeSandbox {
             executeCodeResponse.setMessage(ExecuteCodeStatusEnum.SUCCESS.getMsg());
         }
         executeCodeResponse.setTime(totalTime);
-        executeCodeResponse.setMemory(totalMemory);
         executeCodeResponse.setOutputList(outputList);
         return executeCodeResponse;
     }

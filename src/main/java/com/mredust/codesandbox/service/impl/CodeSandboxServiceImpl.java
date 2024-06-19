@@ -34,11 +34,15 @@ public class CodeSandboxServiceImpl implements CodeSandboxService {
         String msg = executeResponse.getMsg();
         List<String> stdout = executeResponse.getStdout();
         String stderr = executeResponse.getStderr();
+        Long runTotalTime = executeResponse.getRunTotalTime();
+        Long runTotalMemory = executeResponse.getRunTotalMemory();
         return ExecuteCodeResponse.builder()
                 .statusCode(executeResponseCode)
                 .message(msg)
                 .outputList(stdout)
                 .errorMessage(stderr)
+                .time(runTotalTime)
+                .memory(runTotalMemory)
                 .build();
     }
 }

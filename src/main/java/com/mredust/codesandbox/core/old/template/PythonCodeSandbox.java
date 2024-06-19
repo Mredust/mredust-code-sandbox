@@ -1,3 +1,4 @@
+/*
 package com.mredust.codesandbox.core.old.template;
 
 import cn.hutool.core.io.FileUtil;
@@ -12,9 +13,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+*/
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
- */
+ *//*
+
 @Deprecated
 public class PythonCodeSandbox extends CodeSandboxTemplate {
     
@@ -44,3 +47,4 @@ public class PythonCodeSandbox extends CodeSandboxTemplate {
         return super.runCompileFile(PythonConstant.PYTHON_RUN_CMD, file, file.getAbsolutePath(), inputList);
     }
 }
+*/

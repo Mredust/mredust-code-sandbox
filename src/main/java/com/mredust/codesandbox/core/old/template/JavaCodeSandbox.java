@@ -1,3 +1,4 @@
+/*
 package com.mredust.codesandbox.core.old.template;
 
 import cn.hutool.core.io.FileUtil;
@@ -11,9 +12,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+*/
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
- */
+ *//*
+
+
+
 @Deprecated
 public class JavaCodeSandbox extends CodeSandboxTemplate {
     @Override
@@ -40,3 +45,4 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         return super.runCompileFile(JavaConstant.JAVA_RUN_CMD, file, file.getParent(), inputList);
     }
 }
+*/

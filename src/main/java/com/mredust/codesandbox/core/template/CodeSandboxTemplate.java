@@ -24,24 +24,25 @@ import java.util.regex.Pattern;
 public abstract class CodeSandboxTemplate {
     
     private static final String WORK_DIR = "tempcode";
-    private static final String MAIN_CLASS_NAME = "Main";
     private static final String PROBLEM_CLASS_NAME = "Solution";
+    
+    private static final String MAIN_CLASS_NAME = "Main";
     private static final String JAVA_SUFFIX = ".java";
     private static final String COMPILE_CMD = "javac -encoding UTF-8 %s";
     private static final String[] ERROR_MESSAGE_LIST = {"Exception", "Error", "错误", "异常"};
+    public static final Long[] DEFAULT_TIME = {0L};
     
     public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
+        // 前置处理
         String importPackage = "import java.util.*;\nimport java.lang.*;\nimport java.util.function.*;\n";
         String tempCode = importPackage + code;
         File tempFile = saveFile(tempCode, PROBLEM_CLASS_NAME);
         String compileCmd = String.format(COMPILE_CMD, tempFile.getAbsolutePath());
-        String compileMessage = ProcessUtils.processHandler(compileCmd);
-        
-        
+        String compileMessage = ProcessUtils.processHandler(compileCmd, DEFAULT_TIME, DEFAULT_TIME);
         if (!compileMessage.isEmpty()) {
             compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
-            // clearFile(tempFile);
-            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage);
+            clearFile(tempFile);
+            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage, 0L, 0L);
         }
         Method method;
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{tempFile.getParentFile().toURI().toURL()})) {
@@ -51,22 +52,31 @@ public abstract class CodeSandboxTemplate {
             throw new RuntimeException(e);
         }
         clearFile(tempFile);
-        String templateCode = generateTemplateCode(method.getName(), method.getParameters(), method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName());
+        String templateCode = generateTemplateCode(
+                method.getName(),
+                method.getParameters(),
+                method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName()
+        );
+        
+        // 正式处理
         File file = saveFile(templateCode + code, MAIN_CLASS_NAME);
         compileCmd = String.format(COMPILE_CMD, file.getAbsolutePath());
-        compileMessage = ProcessUtils.processHandler(compileCmd);
+        compileMessage = ProcessUtils.processHandler(compileCmd, DEFAULT_TIME, DEFAULT_TIME);
         if (!compileMessage.isEmpty()) {
             clearFile(file);
-            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage);
+            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage, 0L, 0L);
         }
-        List<String> runMessageList = runCode(file, testCaseList);
+        // 运行
+        Long[] time = {0L};
+        Long[] memory = {0L};
+        List<String> runMessageList = runCode(file, testCaseList, time, memory);
         String errorMessage = getErrorMessage(runMessageList);
         if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(errorMessage::contains)) {
-            // clearFile(file);
-            return getExecuteResponse(ExecuteResponseEnum.RUNTIME_ERROR, true, errorMessage);
+            clearFile(file);
+            return getExecuteResponse(ExecuteResponseEnum.RUNTIME_ERROR, true, errorMessage, 0L, 0L);
         }
         clearFile(file);
-        return getExecuteResponse(ExecuteResponseEnum.RUN_SUCCESS, false, errorMessage, runMessageList);
+        return getExecuteResponse(ExecuteResponseEnum.RUN_SUCCESS, false, errorMessage, time[0], memory[0], runMessageList);
     }
     
     private static File saveFile(String code, String fileName) {
@@ -104,7 +114,7 @@ public abstract class CodeSandboxTemplate {
         return templateCode.toString();
     }
     
-    protected abstract List<String> runCode(File file, List<String[]> testCaseList);
+    protected abstract List<String> runCode(File file, List<String[]> testCaseList, Long[] time, Long[] memory);
     
     
     private void clearFile(File file) {
@@ -134,10 +144,13 @@ public abstract class CodeSandboxTemplate {
     }
     
     @SafeVarargs
-    private final ExecuteResponse getExecuteResponse(ExecuteResponseEnum executeResponseEnum, boolean isCompileAndRun, String msg, List<String>... dataList) {
+    private final ExecuteResponse getExecuteResponse(ExecuteResponseEnum executeResponseEnum, boolean isCompileAndRun, String msg, Long time, Long memory, List<String>... dataList) {
         ExecuteResponse executeResponse = new ExecuteResponse();
         executeResponse.setCode(executeResponseEnum.getCode());
         executeResponse.setMsg(executeResponseEnum.getMsg());
+        executeResponse.setRunTotalTime(time);
+        memory = memory / (1024 * 1024);
+        executeResponse.setRunTotalMemory(memory);
         if (isCompileAndRun) {
             executeResponse.setStderr(msg);
         } else {

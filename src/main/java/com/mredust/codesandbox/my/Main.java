@@ -1,8 +1,5 @@
 package com.mredust.codesandbox.my;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
@@ -12,19 +9,16 @@ public class Main {
 
 class Solution {
     public static void main(String[] args) {
-        // String input = "Exception in thread \\\"main\\\"java.lang.ArithmeticException: / by zero\\t at Solution.sum(Main.java:21)\\t at Main.main(Main.java:6)";
-        String input = "F:\\\\mredust-code-sandbox\\\\tempcode\\\\9be52b94-54ed-40a2-8452-5b27b1d74c73\\\\Solution.java:4: 错误: 需要';'class Solution { public int sum(int a, int b)  {rturn a + b;}}                                                       ^F:\\\\mredust-code-sandbox\\\\tempcode\\\\9be52b94-54ed-40a2-8452-5b27b1d74c73\\\\Solution.java:4: 错误: 不是语句class Solution { public int sum(int a, int b)  {rturn a + b;}}                                                          ^2 个错误";
-
-        String[] regex_list = {"java.lang.*?\\d+\\)", "\\w+\\.java:\\d+: 错误: .*?(?=(\\\\|$))"};
-        for (String regex : regex_list) {
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(input);
-            while (matcher.find()) {
-                // 输出匹配到的部分
-                String matched = matcher.group();
-                System.out.println("Matched: " + matched);
-            }
-        }
+        Runtime r = Runtime.getRuntime();
+        r.gc();// 计算内存前先垃圾回收一次
+        long start = System.currentTimeMillis();// 开始Time
+        long startMem = r.totalMemory(); // 开始Memory
+        new String("1");//！！！！！被测的程序！！！！！
+        long endMem = r.freeMemory(); // 末尾Memory
+        long end = System.currentTimeMillis();// 末尾Time
+        // 输出
+        System.out.println("用时消耗: " + (end - start) + "ms");
+        System.out.println("内存消耗: " + ((startMem - endMem) / 1024) + "KB");
     }
 }
 

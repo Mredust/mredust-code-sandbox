@@ -18,13 +18,24 @@ public class ProcessUtils {
     private ProcessUtils() {
     }
     
-    public static String processHandler(String cmd) {
+    public static String processHandler(String cmd, Long[] time, Long[] memory) {
         Process process = null;
         try {
-            process = Runtime.getRuntime().exec(cmd);
+            Runtime runtime = Runtime.getRuntime();
+            runtime.gc();
+            StopWatch watch = new StopWatch();
+            watch.start();
+            long startMemory = runtime.totalMemory();
+            process = runtime.exec(cmd);
             int execResult = process.waitFor();
             InputStream stream = (execResult == 0) ? process.getInputStream() : process.getErrorStream();
-            return getStreamMessage(stream);
+            String message = getStreamMessage(stream);
+            long endMemory = runtime.freeMemory();
+            watch.stop();
+            long runTime = watch.getLastTaskTimeMillis();
+            time[0] += runTime;
+            memory[0] += (startMemory - endMemory);
+            return message;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
