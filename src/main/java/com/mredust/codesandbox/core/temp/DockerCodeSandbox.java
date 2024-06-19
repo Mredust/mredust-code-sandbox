@@ -1,27 +1,5 @@
 package com.mredust.codesandbox.core.temp;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.ArrayUtil;
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.api.async.ResultCallback;
-import com.github.dockerjava.api.command.StatsCmd;
-import com.github.dockerjava.api.model.*;
-import com.github.dockerjava.core.command.ExecStartResultCallback;
-import com.mredust.codesandbox.config.docker.DockerService;
-import com.mredust.codesandbox.model.dto.ExecuteCodeRequest;
-import com.mredust.codesandbox.model.dto.ExecuteCodeResponse;
-import com.mredust.codesandbox.model.dto.ExecuteResult;
-import com.mredust.codesandbox.model.enums.ExecuteCodeStatusEnum;
-import com.mredust.codesandbox.utils.ProcessUtils;
-import org.springframework.util.StopWatch;
-
-import javax.annotation.Resource;
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * JavaDocker代码沙箱
  * todo Docker沙箱代码
@@ -29,8 +7,8 @@ import java.util.List;
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
 public abstract class DockerCodeSandbox {
-    
-    private static final String GLOBAL_CODE_DIR_PATH = "tempcode";
+
+/*    private static final String GLOBAL_CODE_DIR_PATH = "tempcode";
     
     private static final String JAVA_DEFAULT_CLASS_NAME = "Main.java";
     
@@ -44,9 +22,9 @@ public abstract class DockerCodeSandbox {
     private DockerClient dockerClient;
     
     
-    public ExecuteCodeResponse executeCode(ExecuteCodeRequest executeCodeRequest) {
+    public ExecuteResponse executeCode(ExecuteRequest executeRequest) {
         List<String> inputList = new ArrayList<>();
-        String code = executeCodeRequest.getCode();
+        String code = executeRequest.getCode();
         String path = String.format("%s%s%s", System.getProperty("user.dir"), File.separator, GLOBAL_CODE_DIR_PATH);
         File file = saveCodeToFile(path, code);
         compileCode(file);
@@ -59,9 +37,9 @@ public abstract class DockerCodeSandbox {
         String containerId = dockerService.createContainer(IMAGE_NAME, hostConfig);
         
         List<ExecuteResult> executeResultList = runCompileFile(containerId, inputList);
-        ExecuteCodeResponse executeCodeResponse = getExecuteCodeResponse(executeResultList);
+        ExecuteResponse ExecuteResponse = getExecuteResponse(executeResultList);
         deleteFile(file);
-        return executeCodeResponse;
+        return ExecuteResponse;
     }
     
     public abstract File saveCodeToFile(String path, String code);
@@ -146,22 +124,14 @@ public abstract class DockerCodeSandbox {
     }
     
     
-    protected ExecuteCodeResponse getExecuteCodeResponse(List<ExecuteResult> executeResultList) {
-        ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
+    protected ExecuteResponse getExecuteResponse(List<ExecuteResult> executeResultList) {
+        ExecuteResponse ExecuteResponse = new ExecuteResponse();
         ArrayList<String> outputList = new ArrayList<>();
         long totalTime = 0L;
         long totalMemory = 0L;
         boolean compileFailed = false;
         for (ExecuteResult executeResult : executeResultList) {
             String message = executeResult.getMessage();
-            if (ExecuteCodeStatusEnum.COMPILE_FAILED.getCode().equals(executeResult.getExecuteCode())) {
-                executeCodeResponse.setStatusCode(ExecuteCodeStatusEnum.COMPILE_FAILED.getCode());
-                executeCodeResponse.setMessage(ExecuteCodeStatusEnum.COMPILE_FAILED.getMsg());
-                executeCodeResponse.setErrorMessage(message);
-                outputList.clear();
-                compileFailed = true;
-                break;
-            }
             outputList.add(executeResult.getMessage());
             Long runTime = executeResult.getTime();
             Long runMemory = executeResult.getMemory();
@@ -169,12 +139,8 @@ public abstract class DockerCodeSandbox {
             totalMemory += (runMemory != null) ? runMemory : 0L;
         }
         if (!compileFailed) {
-            executeCodeResponse.setStatusCode(ExecuteCodeStatusEnum.SUCCESS.getCode());
-            executeCodeResponse.setMessage(ExecuteCodeStatusEnum.SUCCESS.getMsg());
         }
-        executeCodeResponse.setTime(totalTime);
-        executeCodeResponse.setOutputList(outputList);
-        return executeCodeResponse;
+        return ExecuteResponse;
     }
     
     public void deleteFile(File file) {
@@ -185,12 +151,10 @@ public abstract class DockerCodeSandbox {
     }
     
     
-    private ExecuteCodeResponse getErrorResponse(Throwable e) {
-        ExecuteCodeResponse executeCodeResponse = new ExecuteCodeResponse();
-        executeCodeResponse.setMessage(e.getMessage());
-        executeCodeResponse.setStatusCode(2);
-        return executeCodeResponse;
+    private ExecuteResponse getErrorResponse(Throwable e) {
+        ExecuteResponse ExecuteResponse = new ExecuteResponse();
+        return ExecuteResponse;
     }
-    
+    */
     
 }

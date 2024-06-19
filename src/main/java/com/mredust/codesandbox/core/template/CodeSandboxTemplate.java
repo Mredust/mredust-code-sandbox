@@ -148,9 +148,9 @@ public abstract class CodeSandboxTemplate {
         ExecuteResponse executeResponse = new ExecuteResponse();
         executeResponse.setCode(executeResponseEnum.getCode());
         executeResponse.setMsg(executeResponseEnum.getMsg());
-        executeResponse.setRunTotalTime(time);
+        executeResponse.setRunTime(time);
         memory = memory / (1024 * 1024);
-        executeResponse.setRunTotalMemory(memory);
+        executeResponse.setRunMemory(memory);
         if (isCompileAndRun) {
             executeResponse.setStderr(msg);
         } else {

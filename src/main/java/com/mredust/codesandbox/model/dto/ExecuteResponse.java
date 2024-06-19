@@ -33,10 +33,10 @@ public class ExecuteResponse {
     /**
      * 运行时间(ms)
      */
-    private Long runTotalTime;
+    private Long runTime;
     
     /**
      * 执行时间(kb)
      */
-    private Long runTotalMemory;
+    private Long runMemory;
 }

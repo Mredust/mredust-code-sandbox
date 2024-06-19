@@ -1,6 +1,5 @@
 package com.mredust.codesandbox.utils;
 
-import com.mredust.codesandbox.model.dto.ExecuteResult;
 import org.springframework.util.StopWatch;
 
 import java.io.BufferedReader;
@@ -67,27 +66,5 @@ public class ProcessUtils {
         }
     }
     
-    // TODO：移除多余
-    public static ExecuteResult processHandler(Process compileProcess) {
-        ExecuteResult executeResult = new ExecuteResult();
-        try {
-            StopWatch stopWatch = new StopWatch();
-            stopWatch.start();
-            int execResult = compileProcess.waitFor();
-            executeResult.setExecuteCode(execResult);
-            if (execResult == 0) {
-                executeResult.setMessage(getStreamMessage(compileProcess.getInputStream()));
-            } else {
-                executeResult.setMessage(getStreamMessage(compileProcess.getErrorStream()));
-            }
-            stopWatch.stop();
-            executeResult.setTime(stopWatch.getLastTaskTimeMillis());
-        } catch (InterruptedException | IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            compileProcess.destroy();
-        }
-        return executeResult;
-    }
     
 }

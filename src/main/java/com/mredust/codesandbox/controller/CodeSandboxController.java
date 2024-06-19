@@ -2,8 +2,8 @@ package com.mredust.codesandbox.controller;
 
 import com.mredust.codesandbox.common.BaseResponse;
 import com.mredust.codesandbox.common.Result;
-import com.mredust.codesandbox.model.dto.ExecuteCodeRequest;
-import com.mredust.codesandbox.model.dto.ExecuteCodeResponse;
+import com.mredust.codesandbox.model.dto.ExecuteRequest;
+import com.mredust.codesandbox.model.dto.ExecuteResponse;
 import com.mredust.codesandbox.service.CodeSandboxService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,9 +26,9 @@ public class CodeSandboxController {
     private CodeSandboxService codeSandboxService;
     
     @PostMapping("/execute")
-    public BaseResponse<ExecuteCodeResponse> executeCode(@RequestBody ExecuteCodeRequest executeCodeRequest, HttpServletRequest request) {
+    public BaseResponse<ExecuteResponse> executeCode(@RequestBody ExecuteRequest executeRequest, HttpServletRequest request) {
         // todo ：请求身份校验
-        ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
+        ExecuteResponse executeCodeResponse = codeSandboxService.executeCode(executeRequest);
         return Result.success(executeCodeResponse);
     }
 }

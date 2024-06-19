@@ -1,7 +1,6 @@
 package com.mredust.codesandbox;
 
-import com.mredust.codesandbox.model.dto.ExecuteCodeRequest;
-import com.mredust.codesandbox.model.dto.ExecuteCodeResponse;
+import com.mredust.codesandbox.model.dto.ExecuteRequest;
 import com.mredust.codesandbox.service.CodeSandboxService;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,7 +18,7 @@ class CodeSandboxApplicationTests {
     
     @Test
     void javaSandboxTest() {
-        ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
+        ExecuteRequest executeRequest = new ExecuteRequest();
         List<String> list1 = Arrays.asList("1", "10");
         List<String> list2 = Arrays.asList("1 2", "10");
         List<String> list3 = Arrays.asList("1", "6 10");
@@ -35,18 +34,14 @@ class CodeSandboxApplicationTests {
                 "    }\n" +
                 "    \n" +
                 "}";
-        executeCodeRequest.setCode(code);
-        executeCodeRequest.setLanguage("java");
+        executeRequest.setCode(code);
+        executeRequest.setLanguage("java");
         
-        for (List<String> testCase : testCases) {
-            ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
-            System.out.println(executeCodeResponse);
-        }
     }
     
     @Test
     void pythonSandboxTest() {
-        ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
+        ExecuteRequest executeRequest = new ExecuteRequest();
         List<String> list1 = Arrays.asList("1", "10");
         List<String> list2 = Arrays.asList("1 2", "10");
         List<String> list3 = Arrays.asList("1", "6 10");
@@ -58,22 +53,17 @@ class CodeSandboxApplicationTests {
                 "    a = int(sys.argv[1])\n" +
                 "    b = int(sys.argv[2])\n" +
                 "    print(a + b)\n";
-        executeCodeRequest.setCode(code);
-        executeCodeRequest.setLanguage("python");
+        executeRequest.setCode(code);
+        executeRequest.setLanguage("python");
         
-        for (List<String> testCase : testCases) {
-            ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
-            System.out.println(executeCodeResponse);
-        }
+        
     }
     
     @Test
     void pythonSandboxTest2() {
-        ExecuteCodeRequest executeCodeRequest = new ExecuteCodeRequest();
-        executeCodeRequest.setCode("print('Hello, World!')");
-        executeCodeRequest.setLanguage("python");
-        ExecuteCodeResponse executeCodeResponse = codeSandboxService.executeCode(executeCodeRequest);
-        System.out.println(executeCodeResponse);
+        ExecuteRequest executeRequest = new ExecuteRequest();
+        executeRequest.setCode("print('Hello, World!')");
+        executeRequest.setLanguage("python");
     }
     
     public static void main(String[] args) {

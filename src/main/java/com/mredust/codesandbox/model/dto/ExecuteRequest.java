@@ -16,7 +16,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExecuteCodeRequest {
+public class ExecuteRequest {
     
     /**
      * 测试用例
