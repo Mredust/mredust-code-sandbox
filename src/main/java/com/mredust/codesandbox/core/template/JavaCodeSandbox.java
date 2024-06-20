@@ -1,7 +1,7 @@
 package com.mredust.codesandbox.core.template;
 
 import cn.hutool.core.io.FileUtil;
-import com.mredust.codesandbox.model.dto.ExecuteResponse;
+import com.mredust.codesandbox.exception.CompilationException;
 import com.mredust.codesandbox.utils.ProcessUtils;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +11,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -32,13 +29,10 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
     
     @Override
     protected File preprocessFile(String parentPath, String code) {
-        String importPackage = "import java.util.*;\nimport java.lang.*;\nimport java.util.function.*;\n";
+        String importPackage = JAVA_UTIL_PACKAGE + JAVA_LANG_PACKAGE + JAVA_UTIL_FUNCTION_PACKAGE;
         String tempCode = importPackage + code;
         File file = saveFile(tempCode, parentPath, PROBLEM_CLASS_NAME);
-         /* ExecuteResponse compileErrorResponse = handleCompilationError(tempFile);
-        if (compileErrorResponse != null) {
-            return compileErrorResponse;
-        }*/
+        processCompile(file);
         return file;
     }
     
@@ -51,12 +45,11 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        
         String methodName = method.getName();
         Parameter[] parameters = method.getParameters();
         String returnType = method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName();
         StringBuilder templateCode = new StringBuilder();
-        templateCode.append("import java.util.*;\n").append("import java.lang.*;\n").append("import java.util.function.*;\n").append("public class Main {\n").append("\tpublic static void main(String[] args) {\n");
+        templateCode.append(JAVA_UTIL_PACKAGE).append(JAVA_LANG_PACKAGE).append(JAVA_UTIL_FUNCTION_PACKAGE).append("public class Main {\n").append("\tpublic static void main(String[] args) {\n");
         if (returnType.contains("[]")) {
             templateCode.append("\t\tSystem.out.println(Arrays.toString(new Solution().").append(methodName).append("(");
         } else {
@@ -105,14 +98,7 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
     
     @Override
     protected List<String> runCode(File file, List<String[]> testCaseList, Long[] time, Long[] memory) {
-        String compileCmd = String.format(JAVA_COMPILE_CMD, file.getAbsolutePath());
-        String compileMessage = ProcessUtils.processHandler(compileCmd, INIT_VALUE, INIT_VALUE);
-       /* if (!compileMessage.isEmpty()) {
-            compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
-            clearFile(file);
-            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, compileMessage);
-        }*/
-        
+        processCompile(file);
         List<String> list = new ArrayList<>();
         int size = testCaseList.size();
         int totalCombinations = 1;
@@ -132,6 +118,16 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
             list.add(msg);
         }
         return list;
+    }
+    
+    private void processCompile(File file) {
+        String compileCmd = String.format(JAVA_COMPILE_CMD, file.getAbsolutePath());
+        String compileMessage = ProcessUtils.processHandler(compileCmd, INIT_VALUE, INIT_VALUE);
+        if (!compileMessage.isEmpty()) {
+            compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
+            clearFile(file);
+            throw new CompilationException(compileMessage);
+        }
     }
     
     @Override

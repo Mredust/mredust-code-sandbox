@@ -1,11 +1,13 @@
 package com.mredust.codesandbox.utils;
 
+import com.mredust.codesandbox.exception.CompilationException;
 import org.springframework.util.StopWatch;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -24,16 +26,21 @@ public class ProcessUtils {
             runtime.gc();
             StopWatch watch = new StopWatch();
             watch.start();
-            long startMemory = runtime.totalMemory();
+            long startMemory = getUsedMemory(runtime);
             process = runtime.exec(cmd);
-            int execResult = process.waitFor();
+            boolean flag = process.waitFor(4L, TimeUnit.SECONDS);
+            if (!flag) {
+                process.destroyForcibly();
+                throw new CompilationException("运行超时");
+            }
+            int execResult = process.exitValue();
             InputStream stream = (execResult == 0) ? process.getInputStream() : process.getErrorStream();
             String message = getStreamMessage(stream);
-            long endMemory = runtime.freeMemory();
+            long endMemory = getUsedMemory(runtime);
             watch.stop();
             long runTime = watch.getLastTaskTimeMillis();
             time[0] += runTime;
-            memory[0] += (startMemory - endMemory);
+            memory[0] += (endMemory - startMemory);
             return message;
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
@@ -66,5 +73,9 @@ public class ProcessUtils {
         }
     }
     
+    
+    private static long getUsedMemory(Runtime runtime) {
+        return runtime.totalMemory() - runtime.freeMemory();
+    }
     
 }
