@@ -39,10 +39,10 @@ public class Main {
         // String[] var1 = {"3", "2", "3"};
         String[] var2 = {"6", "9", "6"};
         List<String[]> testCaseList = Arrays.asList(var1, var2);
-        // ExecuteResponse executeResponse1 = new SimpleCodeSandboxFactory().getCodeSandboxTemplate(LanguageEnum.JAVA).executeCode(javaCode, testCaseList);
-        // System.out.println(executeResponse1);
-        ExecuteResponse executeResponse2 = new SimpleCodeSandboxFactory().getCodeSandboxTemplate(LanguageEnum.PYTHON).executeCode(pythonCode, testCaseList);
-        System.out.println(executeResponse2);
+        ExecuteResponse executeResponse1 = new SimpleCodeSandboxFactory().getCodeSandboxTemplate(LanguageEnum.JAVA).executeCode(javaCode, testCaseList);
+        System.out.println(executeResponse1);
+        // ExecuteResponse executeResponse2 = new SimpleCodeSandboxFactory().getCodeSandboxTemplate(LanguageEnum.PYTHON).executeCode(pythonCode, testCaseList);
+        // System.out.println(executeResponse2);
     }
     
     

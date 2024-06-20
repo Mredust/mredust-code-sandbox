@@ -1,0 +1,17 @@
+@SuppressWarnings("unchecked")
+private static <T> T typeConversion(String type, String arg) {
+    Map<String, Function<String, ?>> clazzMap = new HashMap<>(8);
+    clazzMap.put("byte", Byte::parseByte);
+    clazzMap.put("short", Short::parseShort);
+    clazzMap.put("int", Integer::parseInt);
+    clazzMap.put("long", Long::parseLong);
+    clazzMap.put("float", Float::parseFloat);
+    clazzMap.put("double", Double::parseDouble);
+    clazzMap.put("boolean", Boolean::parseBoolean);
+    clazzMap.put("string", s -> s);
+    clazzMap.put("int[]", i -> Arrays.stream(i.split("[,，]")).mapToInt(Integer::parseInt).toArray());
+    if (clazzMap.containsKey(type.trim().toLowerCase())) {
+        return (T) clazzMap.get(type.toLowerCase()).apply(arg);
+    }
+    throw new IllegalArgumentException("Unsupported type: " + type);
+}

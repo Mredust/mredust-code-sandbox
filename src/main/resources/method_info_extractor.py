@@ -54,5 +54,3 @@ if __name__ == "__main__":
         args_str = ",".join(args)
 
         print(f"name:{method_name} args:{args_str}")
-
-

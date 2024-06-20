@@ -11,6 +11,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,17 +73,12 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         } else {
             templateCode.append("));\n").append("\t}\n");
         }
-        templateCode.append("\t@SuppressWarnings(\"unchecked\")\n")
-                .append("\tprivate static <T> T typeConversion(String type, String arg) {\n")
-                .append("\t\tMap<String, Function<String, ?>> clazzMap = new HashMap<>(8);\n")
-                .append("\t\tclazzMap.put(\"int\", Integer::parseInt);\n")
-                .append("\t\tclazzMap.put(\"boolean\", Boolean::parseBoolean);\n")
-                .append("\t\tclazzMap.put(\"string\", s -> s);\n")
-                .append("\t\tclazzMap.put(\"int[]\", i -> Arrays.stream(i.split(\",\")).mapToInt(Integer::parseInt).toArray());\n")
-                .append("\t\tif (clazzMap.containsKey(type.trim().toLowerCase())) {\n")
-                .append("\t\t\treturn (T) clazzMap.get(type.toLowerCase()).apply(arg);\n")
-                .append("\t\t}\n")
-                .append("\t\tthrow new IllegalArgumentException(\"Unsupported type: \" + type);\n").append("\t}\n}\n");
+        try {
+            String typeConversionCode = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "src", "main", "resources", "java_type_conversion")));
+            templateCode.append(typeConversionCode).append("}\n");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return templateCode.toString();
     }
     

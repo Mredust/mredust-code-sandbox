@@ -33,7 +33,7 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
     
     @Override
     protected String generateTemplateCode(File file) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder templateCode = new StringBuilder();
         String rootPath = System.getProperty("user.dir");
         Path pythonFilePath = Paths.get(rootPath, "src", "main", "resources", PYTHON_METHOD_INFO_EXTRACTOR);
         String cmd = String.format("python %s %s", pythonFilePath, file.getAbsolutePath());
@@ -50,7 +50,7 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
         if (types.length > 1) {
             args = pyJson[1].split(":")[1].split(",");
         }
-        sb.append("\n\ndef type_conversion(arg, arg_type):\n")
+        templateCode.append("\n\ndef type_conversion(arg, arg_type):\n")
                 .append("\tif arg_type == \"int\":\n")
                 .append("\t\treturn int(arg)\n")
                 .append("\telif arg_type == \"float\":\n")
@@ -61,17 +61,17 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
                 .append("\t\treturn [type_conversion(item.strip(), arg_type[5:-1]) for item in arg.split(',')]\n")
                 .append("\telse:\n")
                 .append("\t\traise ValueError(f\"不支持该类型的参数: {arg_type}\")\n\n");
-        sb.append("if __name__ == '__main__':\n")
+        templateCode.append("if __name__ == '__main__':\n")
                 .append("\timport sys\n");
-        sb.append("\tprint(Solution().").append(name).append("(");
+        templateCode.append("\tprint(Solution().").append(name).append("(");
         for (int i = 0; i < args.length; i++) {
-            sb.append("type_conversion(sys.argv[").append(i + 1).append("], '").append(args[i].trim()).append("')");
+            templateCode.append("type_conversion(sys.argv[").append(i + 1).append("], '").append(args[i].trim()).append("')");
             if (i < args.length - 1) {
-                sb.append(", ");
+                templateCode.append(", ");
             }
         }
-        sb.append("))\n");
-        return sb.toString();
+        templateCode.append("))\n");
+        return templateCode.toString();
     }
     
     @Override
