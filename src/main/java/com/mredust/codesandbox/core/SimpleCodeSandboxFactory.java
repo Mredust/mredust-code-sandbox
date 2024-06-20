@@ -2,7 +2,7 @@ package com.mredust.codesandbox.core;
 
 import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
 import com.mredust.codesandbox.core.template.JavaCodeSandbox;
-import com.mredust.codesandbox.core.template.PythonCodeSandbox;
+import com.mredust.codesandbox.core.template.Python3CodeSandbox;
 import com.mredust.codesandbox.model.enums.LanguageEnum;
 
 /**
@@ -18,7 +18,7 @@ public class SimpleCodeSandboxFactory implements CodeSandboxFactory {
             case JAVA:
                 return new JavaCodeSandbox();
             case PYTHON:
-                return new PythonCodeSandbox();
+                return new Python3CodeSandbox();
             default:
                 throw new IllegalArgumentException("Unsupported language: " + languageEnum);
         }

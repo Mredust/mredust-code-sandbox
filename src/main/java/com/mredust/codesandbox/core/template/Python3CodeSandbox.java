@@ -1,7 +1,5 @@
 package com.mredust.codesandbox.core.template;
 
-import com.mredust.codesandbox.model.dto.ExecuteResponse;
-
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -12,7 +10,7 @@ import java.util.List;
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
 
-public class PythonCodeSandbox extends CodeSandboxTemplate{
+public class Python3CodeSandbox extends CodeSandboxTemplate{
     
     
     @Override

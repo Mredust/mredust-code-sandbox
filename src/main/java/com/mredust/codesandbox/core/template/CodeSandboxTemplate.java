@@ -9,8 +9,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 
-import static com.mredust.codesandbox.constant.CodeSandboxConstant.MAIN_CLASS_NAME;
-import static com.mredust.codesandbox.constant.CodeSandboxConstant.WORK_DIR;
+import static com.mredust.codesandbox.constant.CodeSandboxConstant.*;
 
 /**
  * 代码沙箱模板
@@ -40,10 +39,10 @@ public abstract class CodeSandboxTemplate {
         String errorMessage = getErrorMessage(runMessageList);
         if (!errorMessage.isEmpty()) {
             clearFile(file);
-            return getExecuteResponse(ExecuteResponseEnum.RUNTIME_ERROR, true, errorMessage, 0L, 0L);
+            return getExecuteResponse(ExecuteResponseEnum.RUNTIME_ERROR, errorMessage);
         }
         clearFile(file);
-        return getExecuteResponse(ExecuteResponseEnum.RUN_SUCCESS, false, errorMessage, time[0], memory[0], runMessageList);
+        return getExecuteResponse(ExecuteResponseEnum.RUN_SUCCESS, false, errorMessage, time, memory, runMessageList);
     }
     
     protected abstract File saveFile(String code, String parentPath, String fileName);
@@ -70,14 +69,19 @@ public abstract class CodeSandboxTemplate {
     
     protected abstract String getErrorMessage(List<String> runMessageList);
     
+    
+    private ExecuteResponse getExecuteResponse(ExecuteResponseEnum executeResponseEnum, String msg) {
+        return getExecuteResponse(executeResponseEnum, true, msg, INIT_VALUE, INIT_VALUE, Collections.emptyList());
+    }
+    
     @SafeVarargs
-    private final ExecuteResponse getExecuteResponse(ExecuteResponseEnum executeResponseEnum, boolean isCompileAndRun, String msg, Long time, Long memory, List<String>... dataList) {
+    private final ExecuteResponse getExecuteResponse(ExecuteResponseEnum executeResponseEnum, boolean isCompileAndRun, String msg, Long[] time, Long[] memory, List<String>... dataList) {
         ExecuteResponse executeResponse = new ExecuteResponse();
         executeResponse.setCode(executeResponseEnum.getCode());
         executeResponse.setMsg(executeResponseEnum.getMsg());
-        executeResponse.setRunTime(time);
-        memory = memory / (1024 * 1024);
-        executeResponse.setRunMemory(memory);
+        executeResponse.setRunTime(time[0]);
+        memory[0] = memory[0] / (1024 * 1024);
+        executeResponse.setRunMemory(memory[0]);
         if (isCompileAndRun) {
             executeResponse.setStderr(msg);
         } else {
@@ -91,7 +95,7 @@ public abstract class CodeSandboxTemplate {
         if (!compileMessage.isEmpty()) {
             compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
             clearFile(file);
-            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, true, compileMessage, 0L, 0L);
+            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, compileMessage);
         }
         return null;
     }

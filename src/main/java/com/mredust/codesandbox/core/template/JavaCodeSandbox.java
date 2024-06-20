@@ -18,8 +18,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.mredust.codesandbox.constant.CodeSandboxConstant.INIT_VALUE;
-import static com.mredust.codesandbox.constant.CodeSandboxConstant.PROBLEM_CLASS_NAME;
+import static com.mredust.codesandbox.constant.CodeSandboxConstant.*;
 import static com.mredust.codesandbox.constant.JavaConstant.*;
 
 /**
@@ -120,7 +119,7 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         for (int i = 0; i < totalCombinations; i++) {
             List<String> params = new ArrayList<>();
             params.add(file.getParent());
-            params.add(JAVA_MAIN_CLASS_NAME);
+            params.add(MAIN_CLASS_NAME);
             for (int j = 0; j < size; j++) {
                 params.add(testCaseList.get(j)[i]);
             }
