@@ -16,4 +16,17 @@ public interface JavaConstant {
      * Java运行命令
      */
     String JAVA_RUN_CMD = "java -Xmx256m -Dfile.encoding=UTF-8 -cp";
+    
+    /**
+     * java util包
+     */
+    String JAVA_UTIL_PACKAGE = "import java.util.*;\n";
+    /**
+     * java lang包
+     */
+    String JAVA_LANG_PACKAGE = "import java.lang.*;\n";
+    /**
+     * java util function包
+     */
+    String JAVA_UTIL_FUNCTION_PACKAGE = "import java.util.function.*;\n";
 }

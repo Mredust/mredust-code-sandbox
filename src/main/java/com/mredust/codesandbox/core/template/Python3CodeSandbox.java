@@ -1,21 +1,19 @@
 package com.mredust.codesandbox.core.template;
 
 import cn.hutool.core.io.FileUtil;
+import com.mredust.codesandbox.exception.CompilationException;
 import com.mredust.codesandbox.utils.ProcessUtils;
 
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.mredust.codesandbox.constant.CodeSandboxConstant.INIT_VALUE;
 import static com.mredust.codesandbox.constant.CodeSandboxConstant.PROBLEM_CLASS_NAME;
-import static com.mredust.codesandbox.constant.PythonConstant.PYTHON_RUN_CMD;
-import static com.mredust.codesandbox.constant.PythonConstant.PYTHON_SUFFIX;
+import static com.mredust.codesandbox.constant.PythonConstant.*;
 
 /**
  * Python代码沙箱
@@ -24,7 +22,7 @@ import static com.mredust.codesandbox.constant.PythonConstant.PYTHON_SUFFIX;
  */
 
 public class Python3CodeSandbox extends CodeSandboxTemplate {
-    private static final String[] ERROR_MESSAGE_LIST = {"Exception", "Error", "错误", "异常"};
+    private static final String[] ERROR_MESSAGE_LIST = {"Traceback", "Error", "错误", "异常"};
     
     @Override
     protected File preprocessFile(String parentPath, String code) {
@@ -32,14 +30,20 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
         return FileUtil.writeUtf8String(code, filePath);
     }
     
+    
     @Override
     protected String generateTemplateCode(File file) {
         StringBuilder sb = new StringBuilder();
         String rootPath = System.getProperty("user.dir");
-        Path pythonFilePath = Paths.get(rootPath, "src", "main", "resources", "method_info_extractor.py");
+        Path pythonFilePath = Paths.get(rootPath, "src", "main", "resources", PYTHON_METHOD_INFO_EXTRACTOR);
         String cmd = String.format("python %s %s", pythonFilePath, file.getAbsolutePath());
-        String s = ProcessUtils.processHandler(cmd, new Long[]{0L}, new Long[]{0L});
-        String[] pyJson = s.split(" ");
+        String methodInfo = ProcessUtils.processHandler(cmd, INIT_VALUE, INIT_VALUE);
+        if (!methodInfo.isEmpty() && Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(methodInfo::contains)) {
+            methodInfo = getErrorMessage(Collections.singletonList(methodInfo));
+            clearFile(file);
+            throw new CompilationException(methodInfo);
+        }
+        String[] pyJson = methodInfo.split(" ");
         String name = pyJson[0].split(":")[1].trim();
         String[] args = {};
         String[] types = pyJson[1].split(":");
@@ -61,7 +65,7 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
                 .append("\timport sys\n");
         sb.append("\tprint(Solution().").append(name).append("(");
         for (int i = 0; i < args.length; i++) {
-            sb.append("type_conversion(sys.argv[").append(i + 1).append("], '").append(args[i]).append("')");
+            sb.append("type_conversion(sys.argv[").append(i + 1).append("], '").append(args[i].trim()).append("')");
             if (i < args.length - 1) {
                 sb.append(", ");
             }
@@ -72,7 +76,7 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
     
     @Override
     protected String mergeCode(String templateCode, String code) {
-        return "from typing import *\n" + code + templateCode;
+        return PYTHON_TYPING_PACKAGE + code + templateCode;
     }
     
     @Override
@@ -105,21 +109,23 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
     
     @Override
     protected String getErrorMessage(List<String> runMessageList) {
+        String regex = "line.*?(?=(\\\\|$|\\n))";
+        Pattern pattern = Pattern.compile(regex);
         for (String msg : runMessageList) {
             if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(msg::contains)) {
-                StringBuilder sb = new StringBuilder();
-                String[] errRegex = {"java.lang.(.*)", "错误:.*?(?=(\\\\|$|\\n))"};
-                for (String regex : errRegex) {
-                    Pattern pattern = Pattern.compile(regex);
-                    Matcher matcher = pattern.matcher(msg);
-                    if (matcher.find()) {
-                        String matched = matcher.group();
-                        sb.append(matched).append("\n");
-                    }
+                Matcher matcher = pattern.matcher(msg);
+                String lastMatch = null;
+                while (matcher.find()) {
+                    lastMatch = matcher.group();
                 }
-                return sb.toString();
+                if (lastMatch != null) {
+                    return lastMatch + "\n";
+                } else {
+                    return "";
+                }
             }
         }
         return "";
     }
+    
 }

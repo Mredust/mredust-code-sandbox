@@ -1,14 +1,11 @@
 package com.mredust.codesandbox.core.template;
 
 import cn.hutool.core.io.FileUtil;
+import com.mredust.codesandbox.exception.CompilationException;
 import com.mredust.codesandbox.model.dto.ExecuteResponse;
 import com.mredust.codesandbox.model.enums.ExecuteResponseEnum;
 
 import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,14 +20,20 @@ public abstract class CodeSandboxTemplate {
     
     public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
         String parentPath = String.format("%s%s%s", System.getProperty("user.dir"), File.separator, WORK_DIR);
-        File tempFile = preprocessFile(parentPath, code);
-        String templateCode = generateTemplateCode(tempFile);
-        clearFile(tempFile);
-        String executeCode = mergeCode(templateCode, code);
-        File file = saveFile(executeCode, parentPath, MAIN_CLASS_NAME);
+        File file;
+        List<String> runMessageList;
         Long[] time = {0L};
         Long[] memory = {0L};
-        List<String> runMessageList = runCode(file, testCaseList, time, memory);
+        try {
+            file = preprocessFile(parentPath, code);
+            String templateCode = generateTemplateCode(file);
+            clearFile(file);
+            String executeCode = mergeCode(templateCode, code);
+            file = saveFile(executeCode, parentPath, MAIN_CLASS_NAME);
+            runMessageList = runCode(file, testCaseList, time, memory);
+        } catch (CompilationException e) {
+            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, e.getMessage());
+        }
         String errorMessage = getErrorMessage(runMessageList);
         if (!errorMessage.isEmpty()) {
             clearFile(file);
@@ -70,13 +73,15 @@ public abstract class CodeSandboxTemplate {
         ExecuteResponse executeResponse = new ExecuteResponse();
         executeResponse.setCode(executeResponseEnum.getCode());
         executeResponse.setMsg(executeResponseEnum.getMsg());
-        executeResponse.setRunTime(time[0]);
-        memory[0] = memory[0] / (1024 * 1024);
-        executeResponse.setRunMemory(memory[0]);
         if (isCompileAndRun) {
             executeResponse.setStderr(msg);
+            executeResponse.setRunTime(0L);
+            executeResponse.setRunMemory(0L);
         } else {
             executeResponse.setStdout(dataList[0]);
+            executeResponse.setRunTime(time[0]);
+            memory[0] = memory[0] / (1024 * 1024);
+            executeResponse.setRunMemory(memory[0]);
         }
         return executeResponse;
     }
