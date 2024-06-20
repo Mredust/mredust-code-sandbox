@@ -31,26 +31,19 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
     private static final String[] ERROR_MESSAGE_LIST = {"Exception", "Error", "错误", "异常"};
     
     @Override
-    public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
-        return super.executeCode(code, testCaseList);
-    }
-    
-    
-    @Override
-    protected File preprocessCode(String parentPath, String code) {
+    protected File preprocessFile(String parentPath, String code) {
         String importPackage = "import java.util.*;\nimport java.lang.*;\nimport java.util.function.*;\n";
         String tempCode = importPackage + code;
-        return saveFile(tempCode, parentPath, PROBLEM_CLASS_NAME);
+        File file = saveFile(tempCode, parentPath, PROBLEM_CLASS_NAME);
+         /* ExecuteResponse compileErrorResponse = handleCompilationError(tempFile);
+        if (compileErrorResponse != null) {
+            return compileErrorResponse;
+        }*/
+        return file;
     }
     
     @Override
-    protected String compileCode(File file) {
-        String compileCmd = String.format(JAVA_COMPILE_CMD, file.getAbsolutePath());
-        return ProcessUtils.processHandler(compileCmd, INIT_VALUE, INIT_VALUE);
-    }
-    
-    @Override
-    protected Method preprocessFile(File file) {
+    protected String generateTemplateCode(File file) {
         Method method;
         try (URLClassLoader classLoader = new URLClassLoader(new URL[]{file.getParentFile().toURI().toURL()})) {
             Class<?> clazz = classLoader.loadClass(PROBLEM_CLASS_NAME);
@@ -58,13 +51,7 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         } catch (IOException | ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-        clearFile(file);
-        return method;
-    }
-    
-    
-    @Override
-    protected String generateTemplateCode(Method method) {
+        
         String methodName = method.getName();
         Parameter[] parameters = method.getParameters();
         String returnType = method.getReturnType().isArray() ? method.getReturnType().getComponentType().getName() + "[]" : method.getReturnType().getName();
@@ -91,7 +78,17 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         } else {
             templateCode.append("));\n").append("\t}\n");
         }
-        templateCode.append("\t@SuppressWarnings(\"unchecked\")\n").append("\tprivate static <T> T typeConversion(String type, String arg) {\n").append("\t\tMap<String, Function<String, ?>> clazzMap = new HashMap<>(8);\n").append("\t\tclazzMap.put(\"int\", Integer::parseInt);\n").append("\t\tclazzMap.put(\"boolean\", Boolean::parseBoolean);\n").append("\t\tclazzMap.put(\"string\", s -> s);\n").append("\t\tclazzMap.put(\"int[]\", i -> Arrays.stream(i.split(\",\")).mapToInt(Integer::parseInt).toArray());\n").append("\t\tif (clazzMap.containsKey(type.trim().toLowerCase())) {\n").append("\t\t\treturn (T) clazzMap.get(type.toLowerCase()).apply(arg);\n").append("\t\t}\n").append("\t\tthrow new IllegalArgumentException(\"Unsupported type: \" + type);\n").append("\t}\n}\n");
+        templateCode.append("\t@SuppressWarnings(\"unchecked\")\n")
+                .append("\tprivate static <T> T typeConversion(String type, String arg) {\n")
+                .append("\t\tMap<String, Function<String, ?>> clazzMap = new HashMap<>(8);\n")
+                .append("\t\tclazzMap.put(\"int\", Integer::parseInt);\n")
+                .append("\t\tclazzMap.put(\"boolean\", Boolean::parseBoolean);\n")
+                .append("\t\tclazzMap.put(\"string\", s -> s);\n")
+                .append("\t\tclazzMap.put(\"int[]\", i -> Arrays.stream(i.split(\",\")).mapToInt(Integer::parseInt).toArray());\n")
+                .append("\t\tif (clazzMap.containsKey(type.trim().toLowerCase())) {\n")
+                .append("\t\t\treturn (T) clazzMap.get(type.toLowerCase()).apply(arg);\n")
+                .append("\t\t}\n")
+                .append("\t\tthrow new IllegalArgumentException(\"Unsupported type: \" + type);\n").append("\t}\n}\n");
         return templateCode.toString();
     }
     
@@ -100,16 +97,22 @@ public class JavaCodeSandbox extends CodeSandboxTemplate {
         return templateCode + code;
     }
     
-    
     @Override
     protected File saveFile(String code, String parentPath, String fileName) {
         String filePath = String.format("%s%s%s%s%s", parentPath, File.separator, UUID.randomUUID(), File.separator, (fileName + JAVA_SUFFIX));
         return FileUtil.writeUtf8String(code, filePath);
     }
     
-    
     @Override
     protected List<String> runCode(File file, List<String[]> testCaseList, Long[] time, Long[] memory) {
+        String compileCmd = String.format(JAVA_COMPILE_CMD, file.getAbsolutePath());
+        String compileMessage = ProcessUtils.processHandler(compileCmd, INIT_VALUE, INIT_VALUE);
+       /* if (!compileMessage.isEmpty()) {
+            compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
+            clearFile(file);
+            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, compileMessage);
+        }*/
+        
         List<String> list = new ArrayList<>();
         int size = testCaseList.size();
         int totalCombinations = 1;

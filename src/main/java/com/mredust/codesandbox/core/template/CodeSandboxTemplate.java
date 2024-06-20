@@ -5,7 +5,10 @@ import com.mredust.codesandbox.model.dto.ExecuteResponse;
 import com.mredust.codesandbox.model.enums.ExecuteResponseEnum;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,19 +23,11 @@ public abstract class CodeSandboxTemplate {
     
     public ExecuteResponse executeCode(String code, List<String[]> testCaseList) {
         String parentPath = String.format("%s%s%s", System.getProperty("user.dir"), File.separator, WORK_DIR);
-        File tempFile = preprocessCode(parentPath, code);
-        ExecuteResponse compileErrorResponse = handleCompilationError(tempFile);
-        if (compileErrorResponse != null) {
-            return compileErrorResponse;
-        }
-        Method method = preprocessFile(tempFile);
-        String templateCode = generateTemplateCode(method);
+        File tempFile = preprocessFile(parentPath, code);
+        String templateCode = generateTemplateCode(tempFile);
+        clearFile(tempFile);
         String executeCode = mergeCode(templateCode, code);
         File file = saveFile(executeCode, parentPath, MAIN_CLASS_NAME);
-        compileErrorResponse = handleCompilationError(file);
-        if (compileErrorResponse != null) {
-            return compileErrorResponse;
-        }
         Long[] time = {0L};
         Long[] memory = {0L};
         List<String> runMessageList = runCode(file, testCaseList, time, memory);
@@ -45,19 +40,18 @@ public abstract class CodeSandboxTemplate {
         return getExecuteResponse(ExecuteResponseEnum.RUN_SUCCESS, false, errorMessage, time, memory, runMessageList);
     }
     
-    protected abstract File saveFile(String code, String parentPath, String fileName);
+    protected abstract File preprocessFile(String parentPath, String code);
     
-    protected abstract File preprocessCode(String parentPath, String code);
-    
-    protected abstract Method preprocessFile(File file);
-    
-    protected abstract String generateTemplateCode(Method method);
+    protected abstract String generateTemplateCode(File file);
     
     protected abstract String mergeCode(String templateCode, String code);
     
-    protected abstract String compileCode(File file);
+    protected abstract File saveFile(String code, String parentPath, String fileName);
     
     protected abstract List<String> runCode(File file, List<String[]> testCaseList, Long[] time, Long[] memory);
+    
+    
+    protected abstract String getErrorMessage(List<String> runMessageList);
     
     
     protected void clearFile(File file) {
@@ -66,9 +60,6 @@ public abstract class CodeSandboxTemplate {
             FileUtil.del(path);
         }
     }
-    
-    protected abstract String getErrorMessage(List<String> runMessageList);
-    
     
     private ExecuteResponse getExecuteResponse(ExecuteResponseEnum executeResponseEnum, String msg) {
         return getExecuteResponse(executeResponseEnum, true, msg, INIT_VALUE, INIT_VALUE, Collections.emptyList());
@@ -90,13 +81,5 @@ public abstract class CodeSandboxTemplate {
         return executeResponse;
     }
     
-    private ExecuteResponse handleCompilationError(File file) {
-        String compileMessage = compileCode(file);
-        if (!compileMessage.isEmpty()) {
-            compileMessage = getErrorMessage(Collections.singletonList(compileMessage));
-            clearFile(file);
-            return getExecuteResponse(ExecuteResponseEnum.COMPILE_ERROR, compileMessage);
-        }
-        return null;
-    }
+    
 }

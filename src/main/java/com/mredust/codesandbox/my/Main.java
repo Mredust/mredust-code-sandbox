@@ -11,10 +11,7 @@ import java.util.List;
  */
 public class Main {
     public static void main(String[] args) {
-        String code = "from typing import List\n" +
-                "\n" +
-                "\n" +
-                "class Solution:\n" +
+        String userCode ="class Solution:\n" +
                 "    def twoSum(self, nums: List[int], target: int) -> List[int]:\n" +
                 "        n = len(nums)\n" +
                 "        for i in range(n):\n" +
@@ -22,17 +19,13 @@ public class Main {
                 "                if nums[i] + nums[j] == target:\n" +
                 "                    return [i, j]\n" +
                 "\n" +
-                "        return []\n" +
-                "\n" +
-                "\n" +
-                "if __name__ == '__main__':\n" +
-                "    import sys\n" +
-                "\n" +
-                "    print(Solution().twoSum(list(map(int, sys.argv[1].split(\",\"))), int(sys.argv[2])))\n";
-        String[] var1 = {"3,2,4","2,7,11,15","3,3"};
-        String[] var2 = {"6","9","6"};
+                "        return []";
+    
+        String[] var1 = {"3,2,4", "2,7,11,15", "3,3"};
+        // String[] var1 = {"3", "2", "3"};
+        String[] var2 = {"6", "9", "6"};
         List<String[]> testCaseList = Arrays.asList(var1, var2);
-        ExecuteResponse executeResponse = new TempTemplate().executeCode(code, testCaseList);
+        ExecuteResponse executeResponse = new TempTemplate().executeCode(userCode, testCaseList);
         System.out.println(executeResponse);
     }
     

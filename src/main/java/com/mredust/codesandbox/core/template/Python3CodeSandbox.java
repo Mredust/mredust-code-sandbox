@@ -1,8 +1,21 @@
 package com.mredust.codesandbox.core.template;
 
+import cn.hutool.core.io.FileUtil;
+import com.mredust.codesandbox.utils.ProcessUtils;
+
 import java.io.File;
-import java.lang.reflect.Method;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.mredust.codesandbox.constant.CodeSandboxConstant.PROBLEM_CLASS_NAME;
+import static com.mredust.codesandbox.constant.PythonConstant.PYTHON_RUN_CMD;
+import static com.mredust.codesandbox.constant.PythonConstant.PYTHON_SUFFIX;
 
 /**
  * Python代码沙箱
@@ -10,46 +23,103 @@ import java.util.List;
  * @author <a href="https://github.com/Mredust">Mredust</a>
  */
 
-public class Python3CodeSandbox extends CodeSandboxTemplate{
-    
+public class Python3CodeSandbox extends CodeSandboxTemplate {
+    private static final String[] ERROR_MESSAGE_LIST = {"Exception", "Error", "错误", "异常"};
     
     @Override
-    protected File saveFile(String code, String parentPath, String fileName) {
-        return null;
+    protected File preprocessFile(String parentPath, String code) {
+        String filePath = String.format("%s%s%s%s%s", parentPath, File.separator, UUID.randomUUID(), File.separator, (PROBLEM_CLASS_NAME + PYTHON_SUFFIX));
+        return FileUtil.writeUtf8String(code, filePath);
     }
     
     @Override
-    protected File preprocessCode(String parentPath, String code) {
-        return null;
-    }
-    
-    @Override
-    protected Method preprocessFile(File file) {
-        return null;
-    }
-    
-    @Override
-    protected String generateTemplateCode(Method method) {
-        return null;
+    protected String generateTemplateCode(File file) {
+        StringBuilder sb = new StringBuilder();
+        String rootPath = System.getProperty("user.dir");
+        Path pythonFilePath = Paths.get(rootPath, "src", "main", "resources", "method_info_extractor.py");
+        String cmd = String.format("python %s %s", pythonFilePath, file.getAbsolutePath());
+        String s = ProcessUtils.processHandler(cmd, new Long[]{0L}, new Long[]{0L});
+        String[] pyJson = s.split(" ");
+        String name = pyJson[0].split(":")[1].trim();
+        String[] args = {};
+        String[] types = pyJson[1].split(":");
+        if (types.length > 1) {
+            args = pyJson[1].split(":")[1].split(",");
+        }
+        sb.append("\n\ndef type_conversion(arg, arg_type):\n")
+                .append("\tif arg_type == \"int\":\n")
+                .append("\t\treturn int(arg)\n")
+                .append("\telif arg_type == \"float\":\n")
+                .append("\t\treturn float(arg)\n")
+                .append("\telif arg_type == \"str\":\n")
+                .append("\t\treturn str(arg)\n")
+                .append("\telif arg_type.startswith(\"List[\") and arg_type.endswith(\"]\"):\n")
+                .append("\t\treturn [type_conversion(item.strip(), arg_type[5:-1]) for item in arg.split(',')]\n")
+                .append("\telse:\n")
+                .append("\t\traise ValueError(f\"不支持该类型的参数: {arg_type}\")\n\n");
+        sb.append("if __name__ == '__main__':\n")
+                .append("\timport sys\n");
+        sb.append("\tprint(Solution().").append(name).append("(");
+        for (int i = 0; i < args.length; i++) {
+            sb.append("type_conversion(sys.argv[").append(i + 1).append("], '").append(args[i]).append("')");
+            if (i < args.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("))\n");
+        return sb.toString();
     }
     
     @Override
     protected String mergeCode(String templateCode, String code) {
-        return null;
+        return "from typing import *\n" + code + templateCode;
     }
     
     @Override
-    protected String compileCode(File file) {
-        return null;
+    protected File saveFile(String code, String parentPath, String fileName) {
+        String filePath = String.format("%s%s%s%s%s", parentPath, File.separator, UUID.randomUUID(), File.separator, (PROBLEM_CLASS_NAME + PYTHON_SUFFIX));
+        return FileUtil.writeUtf8String(code, filePath);
     }
     
     @Override
     protected List<String> runCode(File file, List<String[]> testCaseList, Long[] time, Long[] memory) {
-        return null;
+        List<String> list = new ArrayList<>();
+        int size = testCaseList.size();
+        int totalCombinations = 1;
+        for (String[] testCase : testCaseList) {
+            totalCombinations = Math.max(testCase.length, totalCombinations);
+        }
+        for (int i = 0; i < totalCombinations; i++) {
+            List<String> params = new ArrayList<>();
+            params.add(file.getAbsolutePath());
+            for (int j = 0; j < size; j++) {
+                params.add(testCaseList.get(j)[i]);
+            }
+            String paramList = String.join(" ", params);
+            String cmd = PYTHON_RUN_CMD + " " + paramList;
+            String msg = ProcessUtils.processHandler(cmd, time, memory);
+            list.add(msg);
+        }
+        return list;
     }
     
     @Override
     protected String getErrorMessage(List<String> runMessageList) {
-        return null;
+        for (String msg : runMessageList) {
+            if (Arrays.stream(ERROR_MESSAGE_LIST).anyMatch(msg::contains)) {
+                StringBuilder sb = new StringBuilder();
+                String[] errRegex = {"java.lang.(.*)", "错误:.*?(?=(\\\\|$|\\n))"};
+                for (String regex : errRegex) {
+                    Pattern pattern = Pattern.compile(regex);
+                    Matcher matcher = pattern.matcher(msg);
+                    if (matcher.find()) {
+                        String matched = matcher.group();
+                        sb.append(matched).append("\n");
+                    }
+                }
+                return sb.toString();
+            }
+        }
+        return "";
     }
 }
