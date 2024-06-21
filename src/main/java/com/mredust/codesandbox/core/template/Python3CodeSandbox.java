@@ -91,7 +91,7 @@ public class Python3CodeSandbox extends CodeSandboxTemplate {
         int size = testCaseList.size();
         int totalCombinations = 1;
         for (String[] testCase : testCaseList) {
-            totalCombinations = Math.max(testCase.length, totalCombinations);
+            totalCombinations = Math.min(testCase.length, totalCombinations);
         }
         for (int i = 0; i < totalCombinations; i++) {
             List<String> params = new ArrayList<>();

@@ -1,7 +1,7 @@
 package com.mredust.codesandbox.service.impl;
 
 import com.mredust.codesandbox.common.ResponseCode;
-import com.mredust.codesandbox.core.SimpleCodeSandboxFactory;
+import com.mredust.codesandbox.core.strategy.SimpleCodeSandboxFactory;
 import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
 import com.mredust.codesandbox.exception.BusinessException;
 import com.mredust.codesandbox.model.dto.ExecuteRequest;

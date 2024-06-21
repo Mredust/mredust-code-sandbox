@@ -1,4 +1,4 @@
-package com.mredust.codesandbox.core;
+package com.mredust.codesandbox.core.strategy;
 
 import com.mredust.codesandbox.core.template.CodeSandboxTemplate;
 import com.mredust.codesandbox.model.enums.LanguageEnum;

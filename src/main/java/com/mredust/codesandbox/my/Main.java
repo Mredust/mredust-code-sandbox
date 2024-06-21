@@ -1,6 +1,6 @@
 package com.mredust.codesandbox.my;
 
-import com.mredust.codesandbox.core.SimpleCodeSandboxFactory;
+import com.mredust.codesandbox.core.strategy.SimpleCodeSandboxFactory;
 import com.mredust.codesandbox.model.dto.ExecuteResponse;
 import com.mredust.codesandbox.model.enums.LanguageEnum;
 
